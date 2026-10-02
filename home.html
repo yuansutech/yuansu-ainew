@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Launcher YuansuTech (AI 3 Editor)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --brand: #ff8400;
+    --brand-deep: #e67600;
+    --brand-soft: #fff5eb;
+    --brand-line: #ffe0c0;
+    --ink: #1a1a1a;
+    --ink-2: #333;
+    --ink-3: #666;
+    --ink-4: #999;
+    --line: #eaeaea;
+    --bg-soft: #fafafa;
+  }
+
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg-soft);
+    color: var(--ink-2);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 780px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 48px 40px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.06);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -140px;
+    right: -140px;
+    width: 340px;
+    height: 340px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,132,0,.08), transparent 70%);
+    pointer-events: none;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
+    position: relative;
+  }
+
+  .brand img {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(255,132,0,.25);
+    background: linear-gradient(135deg, #ff8400, #ffb266);
+  }
+
+  .brand .txt {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .brand .txt small {
+    display: block;
+    font-size: 12px;
+    color: var(--ink-4);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 28px 0 10px;
+    position: relative;
+  }
+
+  p.sub {
+    font-size: 14.5px;
+    color: var(--ink-3);
+    line-height: 1.8;
+    margin-bottom: 36px;
+    position: relative;
+  }
+
+  .modes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    position: relative;
+  }
+
+  @media (max-width: 680px) {
+    .modes { grid-template-columns: 1fr; }
+  }
+
+  .mode {
+    display: block;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 24px 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color .25s, box-shadow .25s, transform .25s;
+    position: relative;
+    overflow: hidden;
+    min-height: 160px;
+  }
+
+  .mode::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--brand), #ffb266);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .35s cubic-bezier(.22,.61,.36,1);
+  }
+
+  .mode:hover {
+    border-color: var(--brand);
+    box-shadow: 0 12px 30px rgba(255,132,0,.12);
+    transform: translateY(-4px);
+  }
+  .mode:hover::after { transform: scaleX(1); }
+
+  .mode .ico {
+    width: 40px;
+    height: 40px;
+    border-radius: 9px;
+    background: var(--brand-soft);
+    color: var(--brand);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-bottom: 14px;
+    transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+  }
+  .mode:hover .ico { transform: rotate(-8deg) scale(1.1); }
+
+  .mode h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .mode .desc {
+    font-size: 13px;
+    color: var(--ink-3);
+    line-height: 1.7;
+  }
+
+  .mode .go {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--brand);
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: all .3s cubic-bezier(.22,.61,.36,1);
+  }
+  .mode:hover .go { opacity: 1; transform: translateX(0); }
+
+  .foot {
+    margin-top: 36px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--ink-4);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    position: relative;
+  }
+  .foot a { color: var(--ink-4); text-decoration: none; }
+  .foot a:hover { color: var(--brand); }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <div class="brand">
+    <img src="tx.png" alt="YuansuTech" onerror="this.style.display='none'">
+    <div class="txt">
+      AI Launcher YuansuTech
+      <small>AI 3 Editor · Web</small>
+    </div>
+  </div>
+
+  <h1>选择模式</h1>
+  <p class="sub">
+    三家 AI 同台对话。选一种玩法进入。
+  </p>
+
+  <div class="modes">
+
+    <a class="mode" href="relay.html">
+      <div class="ico">💬</div>
+      <h3>接龙模式</h3>
+      <div class="desc">你一句，Qwen → DeepSeek → 智谱 依次接话。</div>
+      <span class="go">进入 →</span>
+    </a>
+
+    <a class="mode" href="discuss.html">
+      <div class="ico">🗣️</div>
+      <h3>讨论模式</h3>
+      <div class="desc">你出话题，三家无限循环，随时可插嘴。</div>
+      <span class="go">进入 →</span>
+    </a>
+
+    <a class="mode" href="battle.html">
+      <div class="ico">⚔️</div>
+      <h3>互怼模式</h3>
+      <div class="desc">编程题，三家各写代码、互拆、裁判打分。</div>
+      <span class="go">进入 →</span>
+    </a>
+
+  </div>
+
+  <div class="foot">
+    <span>© 2026 YuansuTech · 开源免费</span>
+    <a href="https://github.com/yuansutech/yuansu-ainew" target="_blank" rel="noopener">GitHub →</a>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>讨论模式 · AI Launcher YuansuTech</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --brand: #ff8400; --brand-deep: #e67600;
+    --ink: #1a1a1a; --ink-2: #333; --ink-3: #666; --ink-4: #999;
+    --line: #eaeaea; --bg-soft: #fafafa;
+  }
+  body {
+    font-family: "Microsoft YaHei", sans-serif;
+    background: var(--bg-soft); color: var(--ink-2);
+    height: 100vh; display: flex; flex-direction: column;
+  }
+  header {
+    background: #fff; border-bottom: 1px solid var(--line);
+    padding: 12px 20px; display: flex; align-items: center; gap: 14px;
+  }
+  header a { color: var(--ink-4); text-decoration: none; font-size: 14px; }
+  header a:hover { color: var(--brand); }
+  header h1 { font-size: 16px; color: var(--ink); }
+  header .badge {
+    background: #fff5eb; color: var(--brand);
+    border: 1px solid #ffe0c0; font-size: 12px;
+    padding: 2px 10px; border-radius: 20px;
+  }
+  .top {
+    background: #fff; border-bottom: 1px solid var(--line);
+    padding: 10px 20px; display: flex; gap: 10px; align-items: center;
+  }
+  .top input {
+    flex: 1; border: 1px solid #ddd; border-radius: 6px;
+    padding: 9px 12px; font-family: inherit; font-size: 14px;
+  }
+  .top button {
+    background: var(--brand); color: #fff; border: none;
+    border-radius: 6px; padding: 9px 20px; font-size: 14px;
+    font-weight: 600; cursor: pointer;
+  }
+  .top button:hover { background: var(--brand-deep); }
+  .top button:disabled { background: #ccc; cursor: not-allowed; }
+  main {
+    flex: 1; display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px; padding: 12px; overflow: hidden;
+  }
+  .col {
+    background: #fff; border: 1px solid var(--line);
+    border-radius: 8px; display: flex; flex-direction: column; overflow: hidden;
+  }
+  .col-head {
+    padding: 10px 14px; border-bottom: 1px solid var(--line);
+    font-weight: 600; font-size: 14px;
+  }
+  .col-head.q { color: #6a8cff; }
+  .col-head.d { color: #4a90e2; }
+  .col-head.z { color: #a06ae0; }
+  .col-body {
+    flex: 1; overflow-y: auto; padding: 12px 14px;
+    font-size: 13.5px; line-height: 1.7;
+  }
+  .msg { margin-bottom: 14px; }
+  .msg .who { font-size: 11px; color: #999; margin-bottom: 4px; }
+  .msg .txt { white-space: pre-wrap; word-break: break-word; }
+  .msg.user .who { color: #1a6dff; font-weight: 600; }
+  .msg.user .txt { color: #1a6dff; }
+  .bottom {
+    background: #fff; border-top: 1px solid var(--line);
+    padding: 10px 12px; display: flex; gap: 10px;
+  }
+  .bottom textarea {
+    flex: 1; border: 1px solid #ddd; border-radius: 6px;
+    padding: 8px 12px; font-family: inherit; font-size: 14px;
+    resize: none; height: 48px;
+  }
+  .bottom button {
+    background: var(--brand); color: #fff; border: none;
+    border-radius: 6px; padding: 0 20px; font-size: 13px;
+    font-weight: 600; cursor: pointer;
+  }
+  .bottom button:hover { background: var(--brand-deep); }
+  .status {
+    padding: 6px 12px; font-size: 12px; color: #999;
+    background: #fff; border-top: 1px solid var(--line); text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html">← 返回</a>
+  <h1>AI Launcher YuansuTech · Web</h1>
+  <span class="badge">讨论模式</span>
+</header>
+
+<div class="top">
+  <input id="topic" placeholder="输入话题，点开始，三家会一直聊下去" value="AI 到底该不该有情绪？">
+  <button id="startBtn">▶ 开始</button>
+  <button id="stopBtn" disabled>⏹ 停止</button>
+</div>
+
+<main>
+  <div class="col">
+    <div class="col-head q">🤖 Qwen</div>
+    <div class="col-body" id="qwen"></div>
+  </div>
+  <div class="col">
+    <div class="col-head d">🐳 DeepSeek</div>
+    <div class="col-body" id="ds"></div>
+  </div>
+  <div class="col">
+    <div class="col-head z">🧠 智谱 GLM</div>
+    <div class="col-body" id="zhipu"></div>
+  </div>
+</main>
+
+<div class="status" id="status">就绪，输入话题点开始</div>
+
+<div class="bottom">
+  <textarea id="host" placeholder="插一句…（Ctrl+Enter 发送，下一位会优先回应你）"></textarea>
+  <button id="hostBtn">插嘴</button>
+</div>
+
+<script>
+/* ============ 1. Key ============ */
+const QWEN_KEY     = "sk-ws-H.PRLXIYE.Zwd3.MEQCIDe2QbMzGPNBlxqK75qjF27ZZ-62XascgbT4sVPSqgYaAiB4eP8X1FHAu5r3LvHTkpqn5zcEh3cyEw-bRhTmiHRedg";
+const DEEPSEEK_KEY = "sk-8d3263d2ce5e427caa5875feb29f1175";
+const ZHIPU_KEY    = "4284e03d2b1a48c9808eaca60029dc5f.NpOBsBXkOXnmH5V9";
+
+const QWEN_MODEL     = "qwen-turbo";
+const DEEPSEEK_MODEL = "deepseek-chat";
+const ZHIPU_MODEL    = "glm-4-flash";
+
+/* ============ 2. 调用 ============ */
+async function callQwen(messages) {
+  const res = await fetch("https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + QWEN_KEY },
+    body: JSON.stringify({ model: QWEN_MODEL, messages, temperature: 0.85 }),
+  });
+  if (!res.ok) throw new Error("Qwen " + res.status + ": " + await res.text());
+  return (await res.json()).choices[0].message.content;
+}
+async function callDeepSeek(messages) {
+  const res = await fetch("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + DEEPSEEK_KEY },
+    body: JSON.stringify({ model: DEEPSEEK_MODEL, messages, temperature: 0.85 }),
+  });
+  if (!res.ok) throw new Error("DeepSeek " + res.status + ": " + await res.text());
+  return (await res.json()).choices[0].message.content;
+}
+async function callZhipu(messages) {
+  const res = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + ZHIPU_KEY },
+    body: JSON.stringify({ model: ZHIPU_MODEL, messages, temperature: 0.85 }),
+  });
+  if (!res.ok) throw new Error("智谱 " + res.status + ": " + await res.text());
+  return (await res.json()).choices[0].message.content;
+}
+
+/* ============ 3. System ============ */
+const SYS_BASE = `你正在参加一场三方自由讨论。规则：
+1. 发言顺序固定：Qwen → DeepSeek → 智谱 → Qwen → …… 无限循环。
+2. 每个人发言时，能看到话题 + 前面所有人说过的全部内容，包括用户中途插的话。
+3. 你的任务不是回答话题，而是"接住"前面的人说的话：
+   - 可以赞同并补充
+   - 可以反驳并给出理由
+   - 可以指出对方偷换了概念、回避了问题、预设了未证明的前提
+   - 可以把讨论往更深一层推
+4. 如果用户中途插话，下一个发言的人必须优先回应用户那句话，回应完之后再继续和另外两家接力。
+5. 禁止复述别人说过的内容，禁止总结全场，禁止说"我同意大家的观点"。
+6. 每段发言控制在 120 字以内，自然口语，不要列清单。
+7. 不许客套、不许缓冲、不许"你说得很有道理"。
+8. 允许尖锐、直接、技术性讽刺，但不许人身攻击，不许编造对方没说过的话。`;
+
+const SYS = {
+  qwen:  SYS_BASE + "\n你的身份：Qwen。风格：温和、有条理，擅长把零散观点串起来，偶尔被逼急了才会硬起来。",
+  ds:    SYS_BASE + "\n你的身份：DeepSeek。风格：犀利、直击本质，专门拆台，但拆得有道理。",
+  zhipu: SYS_BASE + "\n你的身份：智谱。风格：沉稳、精准，擅长从别人忽略的细节切进来，收尾或翻盘。",
+};
+
+/* ============ 4. 共享历史 ============ */
+let history = [];   // [{who, text}]
+let pendingHost = null;
+let running = false;
+let stopFlag = false;
+
+function buildMessages(who) {
+  const msgs = [{ role: "system", content: SYS[who] }];
+  for (const item of history) {
+    msgs.push({ role: "user", content: `[${item.who} 说] ${item.text}` });
+  }
+  if (pendingHost) {
+    msgs.push({ role: "user", content: `【用户刚刚插话，你必须优先正面回应这句话】${pendingHost}` });
+  }
+  return msgs;
+}
+
+function addMsg(colId, who, text, isUser) {
+  const col = document.getElementById(colId);
+  const div = document.createElement("div");
+  div.className = "msg" + (isUser ? " user" : "");
+  div.innerHTML = `<div class="who"></div><div class="txt"></div>`;
+  div.querySelector(".who").textContent = who;
+  div.querySelector(".txt").textContent = text;
+  col.appendChild(div);
+  col.scrollTop = col.scrollHeight;
+}
+
+function setStatus(s) { document.getElementById("status").textContent = s; }
+
+/* ============ 5. 主循环 ============ */
+async function loop() {
+  const roster = [
+    { who: "qwen",  name: "Qwen",     fn: callQwen,     col: "qwen" },
+    { who: "ds",    name: "DeepSeek", fn: callDeepSeek, col: "ds" },
+    { who: "zhipu", name: "智谱",     fn: callZhipu,    col: "zhipu" },
+  ];
+  let turn = 0;
+  while (running && !stopFlag) {
+    for (const r of roster) {
+      if (!running || stopFlag) return;
+      turn++;
+      setStatus(`${r.name} 正在说第 ${turn} 句...`);
+      try {
+        const msgs = buildMessages(r.who);
+        const reply = await r.fn(msgs);
+        history.push({ who: r.name, text: reply });
+        addMsg(r.col, r.name, reply, false);
+        if (pendingHost) pendingHost = null;
+      } catch (e) {
+        addMsg(r.col, "错误", e.message, false);
+        setStatus("出错：" + e.message);
+        stop();
+        return;
+      }
+      await new Promise(res => setTimeout(res, 500));
+    }
+  }
+}
+
+function start() {
+  const topic = document.getElementById("topic").value.trim();
+  if (!topic) { alert("请输入话题"); return; }
+  history = [{ who: "用户", text: "讨论话题：" + topic }];
+  pendingHost = null;
+  stopFlag = false;
+  running = true;
+
+  ["qwen","ds","zhipu"].forEach(id => document.getElementById(id).innerHTML = "");
+  ["qwen","ds","zhipu"].forEach(id => addMsg(id, "📌 话题", topic, true));
+
+  document.getElementById("startBtn").disabled = true;
+  document.getElementById("stopBtn").disabled = false;
+  document.getElementById("topic").disabled = true;
+
+  loop();
+}
+
+function stop() {
+  running = false;
+  stopFlag = true;
+  document.getElementById("startBtn").disabled = false;
+  document.getElementById("stopBtn").disabled = true;
+  document.getElementById("topic").disabled = false;
+  setStatus("已停止");
+}
+
+function hostSay() {
+  const el = document.getElementById("host");
+  const text = el.value.trim();
+  if (!text) return;
+  el.value = "";
+  history.push({ who: "用户", text });
+  pendingHost = text;
+  ["qwen","ds","zhipu"].forEach(id => addMsg(id, "🎤 你插话", text, true));
+  setStatus("已插话，下一位会优先回应你");
+}
+
+document.getElementById("startBtn").addEventListener("click", start);
+document.getElementById("stopBtn").addEventListener("click", stop);
+document.getElementById("hostBtn").addEventListener("click", hostSay);
+document.getElementById("host").addEventListener("keydown", (e) => {
+  if (e.ctrlKey && e.key === "Enter") hostSay();
+});
+</script>
+
+</body>
+</html>
